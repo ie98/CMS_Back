@@ -37,14 +37,14 @@ public class AdminRealm extends AuthorizingRealm {
 
         UsernamePasswordToken userToken = (UsernamePasswordToken) authenticationToken;
         Admin admin = adminMapper.selectAdminByName(userToken.getUsername());
-        if ( admin == null){
+        if ( admin == null){   //验证账号是否存在
             System.out.println("认证失败" );
-            return  null;//自动抛出UnknownAccountException
+            throw new UnknownAccountException();
         }
         System.out.println("认证通过" );
         //SimpleAuthenticationInfo 的第一个参数可以将当前的user对象传递给授权方法
         //                           第二个参数是自动验证密码，保证密码的安全性
-        return new SimpleAuthenticationInfo(admin,admin.getPassword(),"");
+        return new SimpleAuthenticationInfo(admin,admin.getPassword(),getName());  // 验证密码是否正确
     }
 //    //授权
     @Override

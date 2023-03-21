@@ -9,8 +9,7 @@ import com.exmaple.Demo.model.Admin;
 import com.exmaple.Demo.model.User;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,10 +29,27 @@ public class AdminLoginServiceImpl implements AdminLoginService {
         Subject subject = SecurityUtils.getSubject();
 
         UsernamePasswordToken token = new UsernamePasswordToken(admin.getUsername(),admin.getPassword());
+
         try {
             subject.login(token);
-        }catch (UnknownAccountException e){   //用户名不存在
+        } catch (UnknownAccountException e) {
+            // 用户名不存在
             System.out.println("用户名不存在");
+            adminLoginResult.setMeta(new Meta("ERROR"));
+            return adminLoginResult;
+        } catch (IncorrectCredentialsException e) {
+            // 密码错误
+            System.out.println("密码错误");
+            adminLoginResult.setMeta(new Meta("ERROR"));
+            return adminLoginResult;
+        } catch (LockedAccountException e) {
+            // 账户被锁定
+            System.out.println("密码错误");
+            adminLoginResult.setMeta(new Meta("ERROR"));
+            return adminLoginResult;
+        } catch (AuthenticationException e) {
+            // 其他认证失败情况
+            System.out.println("密码错误");
             adminLoginResult.setMeta(new Meta("ERROR"));
             return adminLoginResult;
         }
