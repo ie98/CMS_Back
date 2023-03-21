@@ -21,11 +21,8 @@ public class CartController {
     @Autowired
     CartServiceImpl cartService;
     @PostMapping("/addCart")
-    public String addCart(@RequestBody Cart cart ){
-        System.out.println(cart.getCart().getFoodname());
-       cartService.addCart(cart);
-
-        return null;
+    public String addCart(@RequestBody Cart cart ) throws JsonProcessingException {
+        return Jackson.classtoJson(cartService.addCart(cart));
     }
 
 

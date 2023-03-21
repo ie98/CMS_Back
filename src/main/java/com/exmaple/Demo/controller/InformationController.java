@@ -85,6 +85,10 @@ public class InformationController {
     public String selectAllFoodNotQuery() throws JsonProcessingException {
        return Jackson.classtoJson(informationService.selectAllFoodNotQuery()) ;
     }
+    @PostMapping("selectAllFoodRecord/{query}")
+    public String selectAllFoodRecord(@PathVariable("query") String shopname,@RequestBody Query query) throws JsonProcessingException {
+        return Jackson.classtoJson(informationService.selectAllFoodRecord(query,shopname)) ;
+    }
 
 
 

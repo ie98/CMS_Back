@@ -5,10 +5,12 @@ import com.exmaple.Demo.dto.Point;
 import com.exmaple.Demo.dto.RecommendSit;
 import com.exmaple.Demo.model.Chair;
 import com.exmaple.Demo.model.DiningTable;
+import lombok.extern.slf4j.Slf4j;
+
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 public class BFSchoice {
 
     private Point[][] Points = new Point[144][144];  //最短距离矩阵
@@ -16,7 +18,15 @@ public class BFSchoice {
     private int[] temp = new int[144];  //桌椅对应一维数组 用来生成Points ，计算最短距离
     private Chair[][] chairs = new Chair[6][24];
 
+/**
+ * @Description BFS
+ * @Author 411头目
+ * @Date 2020/5/25 21:11
+ * Param [tables, peopleNumber]
+ * Return java.util.List<com.exmaple.Demo.model.Chair>
+ **/
     public List<Chair> BFS(List<DiningTable> tables, int peopleNumber) {
+
 //        System.out.println(System.currentTimeMillis());
         createChairs(tables);//创建映射表，存储椅子的位置信息（第几张桌子的第几块椅子）
         BFSChoiceResult[] bfsChoiceResults = bfsChoice(tables, peopleNumber);
@@ -33,9 +43,56 @@ public class BFSchoice {
                 min = bfsChoiceResults[i].getAllLength();
                 index = i;
             }
-//
+        }
+//        List<ExcellentSit> sits = new ArrayList<>();
+        int index2 = 0;  //最靠近边缘的选项
+        int mini = 4000; //最大值 144*23 = 3312
+        for (int i = 0; i < bfsChoiceResults.length; i++) {
+            if (bfsChoiceResults[index].getAllLength() == bfsChoiceResults[i].getAllLength()) {
+//                    sits.get(index2).setAllLength(bfsChoiceResults[i].getAllLength());
+//                    sits.get(index2).setLocation(bfsChoiceResults[i].getLocation());
+                    int left , right ,top ,bottom;
+                    left = right = top = bottom = 0;
+                for (int i1 = 0; i1 < bfsChoiceResults[i].getLocation().length; i1++) {
+                    left += (bfsChoiceResults[i].getLocation()[i1]%24);
+//                    right += (23-(sits.get(index2).getLocation()[i1]%24));
+                    top += difference(bfsChoiceResults[i].getLocation()[i1]/24 , 0);
+                }
+                right = 23 * bfsChoiceResults[i].getLocation().length - left;
+                bottom = 7 * bfsChoiceResults[i].getLocation().length - top;
+                bottom  = bottom *3;  //高度最大值7，宽度最大值23，所以高度乘3，保证最小值不过度趋向于高度
+                top = top *3;
+                System.out.println("//////////////////////");
+                System.out.println("right:"+right);
+                System.out.println("left:"+left);
+                System.out.println("top:"+top);
+                System.out.println("bottom:"+bottom);
+                if (mini>right){
+                    mini = right;
+                    index2 = i;
+                }
+                if(mini>left){
+                    mini = left;
+                    index2 = i;
+                }
+                if (mini>top){
+                    mini = top;
+                    index2 = i;
+                }
+                if (mini>bottom){
+                    mini = bottom;
+                    index2 = i;
+                }
+                System.out.println("mini:"+mini);
+
+            }
         }
 
+//        BFSChoiceResult[] same = new BFSChoiceResult[bfsChoiceResults.length];
+//        for (BFSChoiceResult result : same) {
+//
+//        }
+            index = index2;
             for (int i2 = 0; i2 < bfsChoiceResults[index].getLocation().length; i2++) {
                 System.out.print("座位是：" + ((bfsChoiceResults[index].getLocation()[i2] / 24) + 1) + "-" + ((bfsChoiceResults[index].getLocation()[i2] % 24) + 1));
             }
@@ -106,7 +163,7 @@ public class BFSchoice {
                     for (int m = 0; m < peopleNumber - 1; m++) {
                         tempInFun2[l][m].setUse(true);
                         tempInFun2[l][m].setSitNumber(0);
-                        tempInFun2[l][m].setDistance(999); //防止点数过少使得出现空余点距离为0，反复使用
+                        tempInFun2[l][m].setDistance(999999); //防止点数过少使得出现空余点距离为0，反复使用 值太小会有Bug 值一定要大！！！！！！！
                     }
                 }
 
@@ -126,8 +183,8 @@ public class BFSchoice {
                         tempInFun1[m].setLocation(m);
                     }
                     for (int j = 0; j < 144; j++) {   //该点总长赋值
-                        tempInFun1[j].setDistance(Points[star][j].getDistance());
-                        for (int l = 0; l < k - 1; l++) {
+//                        tempInFun1[j].setDistance(Points[star][j].getDistance());
+                        for (int l = 0; l < k ; l++) {   //改动11111111111111111111111111
                             if (recommendSit[l].getSitNumber() == j) { //该点是否已经选择过 ，是则置零，表示找不到并退出
                                 tempInFun1[j].setDistance(0);
                                 break;
@@ -136,7 +193,7 @@ public class BFSchoice {
                             }
                         }
                     }
-                    tempInFun1[recommendSit[k - 1].getSitNumber()].setDistance(0);
+                   // tempInFun1[recommendSit[k - 1].getSitNumber()].setDistance(0); // ????????????????改动11111111111111
                     maopaoSort.mpSort(tempInFun1); //排序
 //                    System.out.println("排序后:");
 //                    for (int m = 0; m < 144; m++)
@@ -149,7 +206,7 @@ public class BFSchoice {
                             tempInFun2[k - 1][index].setSitNumber(tempInFun1[j].getLocation());
 //                            System.out.print("第" + index + "个点总距离：" + tempInFun1[j].getDistance());
                             index++;
-                            if (index == peopleNumber - 1)
+                            if (index ==( peopleNumber - k))
                                 break;
                         }
                     }
@@ -203,13 +260,14 @@ public class BFSchoice {
 
                 }
                 for (int j = 1; j < peopleNumber; j++) {
+                    System.out.println("Distance:"+recommendSit[j].getDistance());
+                    System.out.println("before:"+result[result_index].getAllLength());
                     result[result_index].setAllLength(recommendSit[j].getDistance() + result[result_index].getAllLength());
+                    System.out.println("after:"+result[result_index].getAllLength());
                     result[result_index].location[j] = recommendSit[j].getSitNumber();
                 }
                 result_index++;
-
             }
-
         }
 
 //        for (int i = 0; i < peopleNumber; i++) {
